@@ -7,6 +7,10 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+    "net/url"
+    "net/http"
+    "io/ioutil"
+    "github.com/tidwall/gjson"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/mdp/qrterminal"
@@ -64,43 +68,96 @@ func (vh *VEZZA) MessageHandler(evt interface{}) {
 
 		txt := strings.ToLower(v.Message.GetConversation())
 		to := cok.Info.Chat
-		if strings.HasPrefix(txt, "about") {
-			vh.SendTextMessage(to, "This bot created by JustFerianss")
-		}
-        if strings.HasPrefix(txt, "imsakiyah") {
-            str := strings.Replace(txt, "imsakiyah ", "", 1)
-            url := "https://api.vhtear.com/jadwalsholat?query=" + url.QueryEscape(str) + "&apikey=NOT-PREMIUM"
+        tod := cok.Info.Sender
+        if strings.HasPrefix(txt, "/myid") {
+            var tods = cok.Info.ID
+            vh.SendTextMessage(to, "Cek personal message untuk melihat ID")
+            vh.SendTextMessage(tod, "Your ID\n> " + tods)
+		if strings.HasPrefix(txt, "/about") {
+            ig := "This bot created by *Lyrics.AnimeMusic*\nBuild with Golang"
+            ig += "\n\nFollow IG"
+            ig+= "\ninstagram.com/lyrics.animemusic"
+			vh.SendTextMessage(to, ig)
+        }
+        if strings.HasPrefix(txt, "/menu") {
+            menus := "╭──────────"                                                 
+            menus += "\n│                Menu"
+            menus += "\n│──────────"
+            menus += "\n│/menu
+			menus += "\n│/apikey"
+            menus += "\n│/myid
+            menus += "\n│/about"
+            menus += "\n│/quotes
+            menus += "\n│/artinama (nama mu)"                                      
+            menus += "\n│/jadwalsholat (kota mu)"                                  
+            menus += "\n│──────────"
+            menus += "\n│ ©      Just Ferianss"                                  
+            menus += "\n╰──────────"                                               
+            vh.SendTextMessage(to, menus)
+        }
+        if strings.HasPrefix(txt, "/jadwalsholat") {
+            str := strings.Replace(txt, "/jadwalsholat ", "", 1)
+            url := "https://api.xteam.xyz/jadwalsholat?kota=" + url.QueryEscape(str) + "&APIKEY=e3cf51d0639bfd38"
             res, err := http.Get(url)
             if err != nil {
                 fmt.Println(err)
             } else {
                 defer res.Body.Close()
                 body, _ := ioutil.ReadAll(res.Body)
-                dear := "Imsakiyah-2022\n"
-                dear += "\n*Tanggal* : " + fmt.Sprintf("%s", gjson.Get(string(body), "result.tanggal").String()) + " WIB"
-                dear += "\n*Shubuh* : " + fmt.Sprintf("%s", gjson.Get(string(body), "result.Shubuh").String()) + " WIB"
-                dear += "\n*Zduhur* : " + fmt.Sprintf("%s", gjson.Get(string(body), "result.Zduhur").String()) + " WIB"
-                dear += "\n*Ashr* : " + fmt.Sprintf("%s", gjson.Get(string(body), "result.Ashr").String()) + " WIB"
-                dear += "\n*Magrib* : " + fmt.Sprintf("%s", gjson.Get(string(body), "result.Magrib").String()) + " WIB"
-                dear += "\n*Isya* : " + fmt.Sprintf("%s", gjson.Get(string(body), "result.Isya").String()) + " WIB"
-                dear += "\n\n*Kota* : " + fmt.Sprintf("%s", gjson.Get(string(body), "result.kota").String())
-                dear += "\n*Tanggal* : " + fmt.Sprintf("%s", gjson.Get(string(body), "result.tanggal").String()) + " WIB"
-                dear += "\n" + fmt.Sprintf("%s", gjson.Get(string(body), "result.ramadhan").String())
+                dear := "╭─Jadwal Sholat" + fmt.Sprintf("%s", gjson.Get(string(body), "Kota").String()) + "\n\n"
+                dear += "\n│*Shubuh* : " + fmt.Sprintf("%s", gjson.Get(string(body), "Subuh").String()) + " WIB"
+                dear += "\n│*Zduhur* : " + fmt.Sprintf("%s", gjson.Get(string(body), "Dzuhur").String()) + " WIB"
+                dear += "\n│*Ashr* : " + fmt.Sprintf("%s", gjson.Get(string(body), "Ashar").String()) + " WIB"
+                dear += "\n│*Magrib* : " + fmt.Sprintf("%s", gjson.Get(string(body), "Magrib").String()) + " WIB"
+                dear += "\n│*Isya* : " + fmt.Sprintf("%s", gjson.Get(string(body), "Isha").String()) + " WIB"
+                dear += "\n\n*╰─Tanggal* : " + fmt.Sprintf("%s", gjson.Get(string(body), "Tanggal").String())
+                vh.SendTextMessage(to, dear)
+            }
+        }
+        if strings.HasPrefix(txt, "/quotes") {
+            url := "https://st4rz.herokuapp.com/api/randomquotes"
+            res, err := http.Get(url)
+            if err != nil {
+                fmt.Println(err)
+            } else {
+                defer res.Body.Close()
+                body, _ := ioutil.ReadAll(res.Body)
+                dear := "Random Quotes"
+                dear += "\n\nAuthor\n> " + "*" + fmt.Sprintf("%s", gjson.Get(string(body), "author").String()) + "*"
+                dear += "\n>Quotes\n> " + fmt.Sprintf("%s", gjson.Get(string(body), "quotes").String())
+                vh.SendTextMessage(to, dear)
+            }
+        }
+        if strings.HasPrefix(txt, "/apikey") {
+            url := "https://api.xteam.xyz/cekey?&APIKEY=e3cf51d0639bfd38"
+            res, err := http.Get(url)
+            if err != nil {
+                fmt.Println(err)
+            } else {
+                defer res.Body.Close()
+                body, _ := ioutil.ReadAll(res.Body)
+                dear := "Information APIKEY"
+                dear += "\n\n>Username : " + fmt.Sprintf("%s", gjson.Get(string(body), "response.name").String())
+                dear += "\n>Response : " + fmt.Sprintf("%s", gjson.Get(string(body), "response.totalhit").String()) + "/100"
+                dear += "\n>Your APIKEY : " +  fmt.Sprintf("%s", gjson.Get(string(body), "response.apikey").String())
+                dear += "*API Rest by XTEAM, VHTear*"
                 vh.SendTextMessage(to, dear)
             }
         }
         if strings.HasPrefix(txt, "/artinama") {
             str := strings.Replace(txt, "/artinama ", "", 1)
-            url := "https://api.vhtear.com/ramalan_nama?nama=" + url.QueryEscape(str) + "&apikey=NOT-PREMIUM"
+            url := "https://api.xteam.xyz/primbon/artinama?q=" + url.QueryEscape(str) + "&apikey=NOT-PREMIUM"
             res, err := http.Get(url)
             if err != nil {
                 fmt.Println(err)
             } else {
                 defer res.Body.Close()
                 body, _ := ioutil.ReadAll(res.Body)
-                dear := "Berikut arti nama And\n\n" + fmt.Sprintf("%s", gjson.Get(string(body), "result.hasil").String())
-                dear += "\n\nSource : " + fmt.Sprintf("%s", gjson.Get(string(body), "result.source").String())
+                dear := "Berikut arti nama " + fmt.Sprintf("%s", gjson.Get(string(body), "result.nama").String())
+                dear += "\n\n> " + fmt.Sprintf("%s", gjson.Get(string(body), "result.arti").String())
+                dear += "\n> " + fmt.Sprintf("%s", gjson.Get(string(body), "result.maksud").String())
                 vh.SendTextMessage(to, dear)
+        }
 		return
 	}
 }
