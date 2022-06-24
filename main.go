@@ -73,6 +73,7 @@ func (vh *VEZZA) MessageHandler(evt interface{}) {
             var tods = cok.Info.ID
             vh.SendTextMessage(to, "Cek personal message untuk melihat ID")
             vh.SendTextMessage(tod, "Your ID\n> " + tods)
+       
 		if strings.HasPrefix(txt, "/about") {
             ig := "This bot created by *Lyrics.AnimeMusic*\nBuild with Golang"
             ig += "\n\nFollow IG"
@@ -159,7 +160,9 @@ func (vh *VEZZA) MessageHandler(evt interface{}) {
                 vh.SendTextMessage(to, dear)
         }
 		return
+       }
 	}
+  }
 }
 
 func main() {
